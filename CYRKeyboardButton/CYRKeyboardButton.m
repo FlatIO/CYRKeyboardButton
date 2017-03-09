@@ -52,7 +52,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 @property (nonatomic, strong) UIPanGestureRecognizer *panGestureRecognizer;
 
 // Internal style
-@property (nonatomic, assign) CGFloat keyCornerRadius UI_APPEARANCE_SELECTOR;
+@property (nonatomic, assign) CGFloat internalCornerRadius UI_APPEARANCE_SELECTOR;
 
 @end
 
@@ -66,7 +66,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     if (self) {
         [self commonInit];
     }
-    
+
     return self;
 }
 
@@ -85,33 +85,35 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         case UIUserInterfaceIdiomPhone:
             _style = CYRKeyboardButtonStylePhone;
             break;
-            
+
         case UIUserInterfaceIdiomPad:
             _style = CYRKeyboardButtonStyleTablet;
             break;
-            
+
         default:
             break;
     }
-    
+
     // Default appearance
     _font = [UIFont systemFontOfSize:22.f];
+    _inputFont = [UIFont systemFontOfSize:44.f];
     _inputOptionsFont = [UIFont systemFontOfSize:24.f];
     _keyColor = [UIColor whiteColor];
     _keyTextColor = [UIColor blackColor];
     _keyShadowColor = [UIColor colorWithRed:136 / 255.f green:138 / 255.f blue:142 / 255.f alpha:1];
     _keyHighlightedColor = [UIColor colorWithRed:213/255.f green:214/255.f blue:216/255.f alpha:1];
-    
+    _keyCornerRadius = -1.f;
+
     // Styling
     self.backgroundColor = [UIColor clearColor];
     self.clipsToBounds = NO;
     self.layer.masksToBounds = NO;
     self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
-    
+
     // State handling
     [self addTarget:self action:@selector(handleTouchDown) forControlEvents:UIControlEventTouchDown];
     [self addTarget:self action:@selector(handleTouchUpInside) forControlEvents:UIControlEventTouchUpInside];
-    
+
     // Input label
     UILabel *inputLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
     inputLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
@@ -120,10 +122,10 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     inputLabel.userInteractionEnabled = NO;
     inputLabel.textColor = _keyTextColor;
     inputLabel.font = _font;
-    
+
     [self addSubview:inputLabel];
     _inputLabel = inputLabel;
-    
+
     [self updateDisplayStyle];
 }
 
@@ -135,9 +137,9 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    
+
     [self setNeedsDisplay];
-    
+
     [self updateButtonPosition];
 }
 
@@ -160,7 +162,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
                              NSStringFromCGRect(self.frame),
                              self.input,
                              self.inputOptions];
-    
+
     return description;
 }
 
@@ -169,7 +171,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     [self willChangeValueForKey:NSStringFromSelector(@selector(input))];
     _input = input;
     [self didChangeValueForKey:NSStringFromSelector(@selector(input))];
-    
+
     _inputLabel.text = _input;
 }
 
@@ -178,7 +180,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     [self willChangeValueForKey:NSStringFromSelector(@selector(inputOptions))];
     _inputOptions = inputOptions;
     [self didChangeValueForKey:NSStringFromSelector(@selector(inputOptions))];
-    
+
     if (_inputOptions.count > 0) {
         [self setupInputOptionsConfiguration];
     } else {
@@ -191,7 +193,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     [self willChangeValueForKey:NSStringFromSelector(@selector(style))];
     _style = style;
     [self didChangeValueForKey:NSStringFromSelector(@selector(style))];
-    
+
     [self updateDisplayStyle];
 }
 
@@ -201,7 +203,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         [self willChangeValueForKey:NSStringFromSelector(@selector(keyTextColor))];
         _keyTextColor = keyTextColor;
         [self didChangeValueForKey:NSStringFromSelector(@selector(keyTextColor))];
-        
+
         _inputLabel.textColor = keyTextColor;
     }
 }
@@ -212,7 +214,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         [self willChangeValueForKey:NSStringFromSelector(@selector(font))];
         _font = font;
         [self didChangeValueForKey:NSStringFromSelector(@selector(font))];
-        
+
         _inputLabel.font = font;
     }
 }
@@ -220,7 +222,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)setTextInput:(id<UITextInput>)textInput
 {
     NSAssert([textInput conformsToProtocol:@protocol(UITextInput)], @"<CYRKeyboardButton> The text input object must conform to the UITextInput protocol!");
-    
+
     [self willChangeValueForKey:NSStringFromSelector(@selector(textInput))];
     _textInput = textInput;
     [self didChangeValueForKey:NSStringFromSelector(@selector(textInput))];
@@ -232,14 +234,14 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     if (_style == CYRKeyboardButtonStylePhone) {
         [self hideInputView];
-        
+
         self.buttonView = [[CYRKeyboardButtonView alloc] initWithKeyboardButton:self type:CYRKeyboardButtonViewTypeInput];
-        
+
         [self.window addSubview:self.buttonView];
     } else {
         [self setNeedsDisplay];
     }
-    
+
 }
 
 - (void)showExpandedInputView:(UILongPressGestureRecognizer *)recognizer
@@ -247,12 +249,12 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         if (self.expandedButtonView == nil) {
             CYRKeyboardButtonView *expandedButtonView = [[CYRKeyboardButtonView alloc] initWithKeyboardButton:self type:CYRKeyboardButtonViewTypeExpanded];
-            
+
             [self.window addSubview:expandedButtonView];
             self.expandedButtonView = expandedButtonView;
-            
+
             [[NSNotificationCenter defaultCenter] postNotificationName:CYRKeyboardButtonDidShowExpandedInputNotification object:self];
-            
+
             [self hideInputView];
         }
     } else if (recognizer.state == UIGestureRecognizerStateCancelled || recognizer.state == UIGestureRecognizerStateEnded) {
@@ -266,7 +268,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     [self.buttonView removeFromSuperview];
     self.buttonView = nil;
-    
+
     [self setNeedsDisplay];
 }
 
@@ -275,7 +277,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     if (self.expandedButtonView.type == CYRKeyboardButtonViewTypeExpanded) {
         [[NSNotificationCenter defaultCenter] postNotificationName:CYRKeyboardButtonDidHideExpandedInputNotification object:self];
     }
-    
+
     [self.expandedButtonView removeFromSuperview];
     self.expandedButtonView = nil;
 }
@@ -284,17 +286,17 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     switch (_style) {
         case CYRKeyboardButtonStylePhone:
-            _keyCornerRadius = 4.f;
+            _internalCornerRadius = _keyCornerRadius != -1.f ? _keyCornerRadius : 4.f;
             break;
-            
+
         case CYRKeyboardButtonStyleTablet:
-            _keyCornerRadius = 6.f;
+            _internalCornerRadius = _keyCornerRadius != -1.f ? _keyCornerRadius : 6.f;
             break;
-            
+
         default:
             break;
     }
-    
+
     [self setNeedsDisplay];
 }
 
@@ -303,12 +305,12 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)insertText:(NSString *)text
 {
     BOOL shouldInsertText = YES;
-    
+
     if ([self.textInput isKindOfClass:[UITextView class]]) {
         // Call UITextViewDelegate methods if necessary
         UITextView *textView = (UITextView *)self.textInput;
         NSRange selectedRange = textView.selectedRange;
-        
+
         if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:)]) {
             shouldInsertText = [textView.delegate textView:textView shouldChangeTextInRange:selectedRange replacementText:text];
         }
@@ -316,15 +318,15 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         // Call UITextFieldDelgate methods if necessary
         UITextField *textField = (UITextField *)self.textInput;
         NSRange selectedRange = [self textInputSelectedRange];
-        
+
         if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:)]) {
             shouldInsertText = [textField.delegate textField:textField shouldChangeCharactersInRange:selectedRange replacementString:text];
         }
     }
-    
+
     if (shouldInsertText == YES) {
         [self.textInput insertText:text];
-        
+
         [[NSNotificationCenter defaultCenter] postNotificationName:CYRKeyboardButtonPressedNotification object:self
                                                           userInfo:@{CYRKeyboardButtonKeyPressedKey : text}];
     }
@@ -333,14 +335,14 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (NSRange)textInputSelectedRange
 {
     UITextPosition *beginning = self.textInput.beginningOfDocument;
-    
+
 	UITextRange *selectedRange = self.textInput.selectedTextRange;
 	UITextPosition *selectionStart = selectedRange.start;
 	UITextPosition *selectionEnd = selectedRange.end;
-    
+
 	const NSInteger location = [self.textInput offsetFromPosition:beginning toPosition:selectionStart];
 	const NSInteger length = [self.textInput offsetFromPosition:selectionStart toPosition:selectionEnd];
-    
+
 	return NSMakeRange(location, length);
 }
 
@@ -352,7 +354,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     CGFloat leftPadding = CGRectGetMinX(self.frame);
     CGFloat rightPadding = CGRectGetMaxX(self.superview.frame) - CGRectGetMaxX(self.frame);
     CGFloat minimumClearance = CGRectGetWidth(self.frame) / 2 + 8;
-    
+
     if (leftPadding >= minimumClearance && rightPadding >= minimumClearance) {
         self.position = CYRKeyboardButtonPositionInner;
     } else if (leftPadding > rightPadding) {
@@ -365,19 +367,19 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)setupInputOptionsConfiguration
 {
     [self tearDownInputOptionsConfiguration];
-    
+
     if (self.inputOptions.count > 0) {
         UILongPressGestureRecognizer *longPressGestureRecognizer =
         [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(showExpandedInputView:)];
         longPressGestureRecognizer.minimumPressDuration = 0.3;
         longPressGestureRecognizer.delegate = self;
-        
+
         [self addGestureRecognizer:longPressGestureRecognizer];
         self.optionsViewRecognizer = longPressGestureRecognizer;
-        
+
         UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePanning:)];
         panGestureRecognizer.delegate = self;
-        
+
         [self addGestureRecognizer:panGestureRecognizer];
         self.panGestureRecognizer = panGestureRecognizer;
     }
@@ -394,14 +396,14 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)handleTouchDown
 {
     [[UIDevice currentDevice] playInputClick];
-    
+
     [self showInputView];
 }
 
 - (void)handleTouchUpInside
 {
     [self insertText:self.input];
-    
+
     [self hideInputView];
     [self hideExpandedInputView];
 }
@@ -411,10 +413,10 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
         if (self.expandedButtonView.selectedInputIndex != NSNotFound) {
             NSString *inputOption = self.inputOptions[self.expandedButtonView.selectedInputIndex];
-            
+
             [self insertText:inputOption];
         }
-        
+
         [self hideExpandedInputView];
     } else {
         CGPoint location = [recognizer locationInView:self.superview];
@@ -427,14 +429,14 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesEnded:touches withEvent:event];
-    
+
     [self hideInputView];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesCancelled:touches withEvent:event];
-    
+
     [self hideInputView];
 }
 
@@ -444,17 +446,17 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
     UIColor *color = self.keyColor;
-    
+
     if (_style == CYRKeyboardButtonStyleTablet && self.state == UIControlStateHighlighted) {
         color = self.keyHighlightedColor;
     }
-    
+
     UIColor *shadow = self.keyShadowColor;
     CGSize shadowOffset = CGSizeMake(0.1, 1.1);
     CGFloat shadowBlurRadius = 0;
-    
+
     UIBezierPath *roundedRectanglePath =
-    [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height - 1) cornerRadius:self.keyCornerRadius];
+    [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height - 1) cornerRadius:self.internalCornerRadius];
     CGContextSaveGState(context);
     CGContextSetShadowWithColor(context, shadowOffset, shadowBlurRadius, shadow.CGColor);
     [color setFill];

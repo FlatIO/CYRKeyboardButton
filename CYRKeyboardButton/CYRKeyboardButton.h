@@ -50,12 +50,12 @@ typedef NS_ENUM(NSUInteger, CYRKeyboardButtonStyle) {
     CYRKeyboardButtonStyleTablet
 };
 
-/** 
+/**
  Notifies observers that the keyboard button has been pressed. The affected button is stored in the object parameter of the notification. The userInfo dictionary contains the pressed key and can be accessed with the CYRKeyboardButtonKeyPressedKey key.
  */
 extern NSString *const CYRKeyboardButtonPressedNotification;
 
-/** 
+/**
  Notifies observers that the keyboard button has show the expanded input view. The affected button is stored in the object parameter of the notification.
  */
 extern NSString *const CYRKeyboardButtonDidShowExpandedInputNotification;
@@ -93,6 +93,11 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
 /**
  The font associated with the keyboard button input options.
  */
+@property (nonatomic, strong) UIFont *inputFont UI_APPEARANCE_SELECTOR;
+
+/**
+ The font associated with the keyboard button input options.
+ */
 @property (nonatomic, strong) UIFont *inputOptionsFont UI_APPEARANCE_SELECTOR;
 
 /**
@@ -115,6 +120,11 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
  The highlighted background color of the keyboard button.
  */
 @property (nonatomic, strong) UIColor *keyHighlightedColor UI_APPEARANCE_SELECTOR;
+
+/**
+ The corner radius of the keyboard button layer.
+ */
+@property (nonatomic, assign) CGFloat keyCornerRadius UI_APPEARANCE_SELECTOR;
 
 /**
  The position of the keyboard button. This is used to determine where to place the popover key views and is automatically determined when the keyboard button is added to a view and update during layout changes.
