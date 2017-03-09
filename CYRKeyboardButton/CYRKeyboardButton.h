@@ -50,12 +50,12 @@ typedef NS_ENUM(NSUInteger, CYRKeyboardButtonStyle) {
     CYRKeyboardButtonStyleTablet
 };
 
-/** 
+/**
  Notifies observers that the keyboard button has been pressed. The affected button is stored in the object parameter of the notification. The userInfo dictionary contains the pressed key and can be accessed with the CYRKeyboardButtonKeyPressedKey key.
  */
 extern NSString *const CYRKeyboardButtonPressedNotification;
 
-/** 
+/**
  Notifies observers that the keyboard button has show the expanded input view. The affected button is stored in the object parameter of the notification.
  */
 extern NSString *const CYRKeyboardButtonDidShowExpandedInputNotification;
@@ -89,6 +89,11 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
  @discussion This font only affects the keyboard button's standard view.
  */
 @property (nonatomic, strong) UIFont *font UI_APPEARANCE_SELECTOR;
+
+/**
+ The font associated with the keyboard button input options.
+ */
+@property (nonatomic, strong) UIFont *inputFont UI_APPEARANCE_SELECTOR;
 
 /**
  The font associated with the keyboard button input options.
