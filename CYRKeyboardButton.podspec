@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name         =  'CYRKeyboardButton'
-  s.version      =  '0.5.3'
+  s.version      =  '0.5.6'
   s.license      =  { :type => 'MIT', :file => 'LICENSE' }
   s.summary      =  'A drop-in keyboard button that mimics the look, feel, and functionality of the native iOS keyboard buttons.'
   s.author       =  { 'Illya Busigin' => 'http://illyabusigin.com/' }
-  s.source       =  { :git => 'https://github.com/illyabusigin/CYRKeyboardButton.git', :tag => '0.5.3' }
+  s.source       =  { :git => 'https://github.com/FlatIO/CYRKeyboardButton.git', :tag => '0.5.6' }
   s.homepage     =  'https://github.com/illyabusigin/CYRKeyboardButton'
   s.platform     =  :ios
   s.source_files =  'CYRKeyboardButton'
